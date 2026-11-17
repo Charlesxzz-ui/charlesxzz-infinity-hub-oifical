@@ -1,0 +1,1424 @@
+-- ============================================================
+-- CHARLESXZZ INFINITY HUB - VERSÃO FINAL INTEGRADA (GITHUB)
+-- Compatível com Delta, Fluxus, Arceus X, Hydrogen, PC e Mobile
+-- ============================================================
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local Stats = game:GetService("Stats")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ==================== CONFIGURAÇÕES ====================
+local CONFIG = {
+    -- CONTROLE DE VERSÃO INTEGRADO AO GITHUB
+    VERSAO_ATUAL = "1.0",
+    VERSAO_URL = "https://raw.githubusercontent.com/Charlesxzz-ui/charlesxzz-infinity-hub-oifical/refs/heads/main/versao.txt",
+
+    -- SISTEMA DE KEY INTEGRADO AO GITHUB
+    KEY_URL = "https://raw.githubusercontent.com/Charlesxzz-ui/charlesxzz-infinity-hub-oifical/refs/heads/main/key.txt", 
+    KEY_PADRAO_SE_FALHAR = "Charlesxzz167INFINITYW", -- Senha reserva caso a internet caia
+    KEY_SAVE_FILE = "charlesxzz_saved_key.txt",
+
+    -- WEBHOOK E DISCORD
+    WEBHOOK_URL = "https://discord.com/api/webhooks/1571619132820955286/GBRtHelzf_J4bEZN6Ag-lCSjLyYg8K2NrhwK72nUxKcqX7RgYtDk8DPU2PgApI__JPnv",
+    DISCORD_LINK = "https://discord.gg/dwvQDe8zs",
+
+    -- TAMANHOS E POSIÇÕES
+    BUTTON_SIZE = UDim2.new(0, 60, 0, 60),
+    BUTTON_POSITION = UDim2.new(0, 20, 0.5, -30),
+    PANEL_WIDTH = 640,
+    PANEL_HEIGHT = 480,
+    WELCOME_WIDTH = 680,
+    WELCOME_HEIGHT = 520,
+
+    -- CORES E IMAGENS
+    BG_COLOR = Color3.fromRGB(15, 15, 15),
+    ACCENT_COLOR = Color3.fromRGB(255, 255, 255),
+    TEXT_COLOR = Color3.fromRGB(255, 255, 255),
+    BUTTON_IMAGE_URL = "https://i.pinimg.com/1200x/3b/7d/51/3b7d51cc9ecf07cd34447bd916da1977.jpg",
+    BG_IMAGE_URL = "https://i.pinimg.com/1200x/ad/25/42/ad2542f9df24014cf4d2b4698a417ff7.jpg",
+    WELCOME_BG_URL = "https://i.pinimg.com/1200x/86/47/08/86470895abeba1ac8518df580b9364e4.jpg",
+    KEY_BG_URL = "https://i.pinimg.com/736x/a6/d7/3a/a6d73a085ed57d7bc31815d8fa567ebb.jpg"
+}
+
+-- ==================== VERIFICADOR DE VERSÃO ONLINE ====================
+local function verificarVersaoOnline()
+    local sucesso, resposta = pcall(function()
+        return game:HttpGet(CONFIG.VERSAO_URL)
+    end)
+
+    if not sucesso or not resposta then
+        return true
+    end
+
+    local versaoOnline = resposta:gsub("%s+", "")
+    if versaoOnline == "" or versaoOnline == CONFIG.VERSAO_ATUAL then
+        return true
+    end
+
+    local alertGui = Instance.new("ScreenGui")
+    alertGui.Name = "CharlesxzzUpdateBlock"
+    alertGui.ResetOnSpawn = false
+    alertGui.Parent = playerGui
+
+    local box = Instance.new("Frame", alertGui)
+    box.Size = UDim2.new(0, 420, 0, 210)
+    box.Position = UDim2.new(0.5, 0, 0.5, 0)
+    box.AnchorPoint = Vector2.new(0.5, 0.5)
+    box.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 12)
+
+    local stroke = Instance.new("UIStroke", box)
+    stroke.Color = Color3.fromRGB(255, 65, 65)
+    stroke.Thickness = 1.5
+
+    local title = Instance.new("TextLabel", box)
+    title.Size = UDim2.new(1, -20, 0, 40)
+    title.Position = UDim2.new(0, 10, 0, 12)
+    title.BackgroundTransparency = 1
+    title.Text = "⛔ ATUALIZAÇÃO OBRIGATÓRIA!"
+    title.TextColor3 = Color3.fromRGB(255, 75, 75)
+    title.TextSize = 18
+    title.Font = Enum.Font.GothamBlack
+
+    local desc = Instance.new("TextLabel", box)
+    desc.Size = UDim2.new(1, -30, 0, 65)
+    desc.Position = UDim2.new(0, 15, 0, 55)
+    desc.BackgroundTransparency = 1
+    desc.Text = string.format("Sua versão (%s) está desatualizada. A versão %s já está disponível. Entre no Discord para pegar o link novo:", CONFIG.VERSAO_ATUAL, versaoOnline)
+    desc.TextColor3 = Color3.fromRGB(240, 240, 240)
+    desc.TextSize = 13
+    desc.Font = Enum.Font.GothamMedium
+    desc.TextWrapped = true
+
+    local btn = Instance.new("TextButton", box)
+    btn.Size = UDim2.new(0, 240, 0, 42)
+    btn.Position = UDim2.new(0.5, -120, 1, -58)
+    btn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+    btn.Text = "📋 COPIAR LINK DO DISCORD"
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+    btn.Activated:Connect(function()
+        pcall(function()
+            if setclipboard then setclipboard(CONFIG.DISCORD_LINK) end
+        end)
+        btn.Text = "✔ LINK COPIADO!"
+        btn.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
+    end)
+
+    return false
+end
+
+if not verificarVersaoOnline() then
+    return
+end
+
+-- ==================== FUNÇÃO PARA PUXAR A KEY DO GITHUB ====================
+local function getActiveKey()
+    if CONFIG.KEY_URL and CONFIG.KEY_URL ~= "" then
+        local ok, result = pcall(function()
+            return game:HttpGet(CONFIG.KEY_URL)
+        end)
+        if ok and result then
+            local cleaned = result:gsub("%s+", "")
+            if cleaned ~= "" then
+                return cleaned
+            end
+        end
+    end
+    return CONFIG.KEY_PADRAO_SE_FALHAR
+end
+
+-- ==================== SISTEMA DE LOGS PARA O DISCORD ====================
+local function getHttpRequest()
+    return request or http_request or (syn and syn.request) or (fluxus and fluxus.request)
+end
+
+local function getExecutorName()
+    if identifyexecutor then
+        local ok, name = pcall(identifyexecutor)
+        if ok and name then return tostring(name) end
+    end
+    return "Desconhecido"
+end
+
+local function sendDiscordLog(title, description, colorHex)
+    if not CONFIG.WEBHOOK_URL or CONFIG.WEBHOOK_URL == "" then return end
+    task.spawn(function()
+        pcall(function()
+            local req = getHttpRequest()
+            if not req then return end
+
+            local payload = {
+                username = "Charlesxzz Infinity Logs",
+                embeds = {{
+                    title = title,
+                    description = description,
+                    color = colorHex or 3447003,
+                    fields = {
+                        { name = "👤 Jogador", value = string.format("%s (@%s)\nID: `%d`", player.DisplayName, player.Name, player.UserId), inline = true },
+                        { name = "💻 Executor / Plataforma", value = string.format("%s (%s)", getExecutorName(), UserInputService.TouchEnabled and "Mobile" or "PC"), inline = true },
+                        { name = "🎮 Place ID", value = "`" .. tostring(game.PlaceId) .. "`", inline = true }
+                    },
+                    footer = { text = "Charlesxzz Infinity Hub • " .. os.date("%d/%m/%Y %H:%M:%S") }
+                }}
+            }
+
+            req({
+                Url = CONFIG.WEBHOOK_URL,
+                Method = "POST",
+                Headers = { ["Content-Type"] = "application/json" },
+                Body = HttpService:JSONEncode(payload)
+            })
+        end)
+    end)
+end
+
+-- ==================== FUNÇÕES AUXILIARES ====================
+local function applyTextReadability(textObj, strokeTransparency)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(0, 0, 0)
+    stroke.Thickness = 1.1
+    stroke.Transparency = strokeTransparency or 0.4
+    stroke.Parent = textObj
+end
+
+pcall(function()
+    local old = playerGui:FindFirstChild("CharlesxzzInfinityHub")
+    if old then old:Destroy() end
+    local coreGuiOld = game:GetService("CoreGui"):FindFirstChild("CharlesxzzInfinityHub")
+    if coreGuiOld then coreGuiOld:Destroy() end
+end)
+
+local function loadRemoteImage(imageObject, url, cacheFileName)
+    task.spawn(function()
+        pcall(function()
+            if getcustomasset and writefile then
+                if isfile and isfile(cacheFileName) then
+                    imageObject.Image = getcustomasset(cacheFileName)
+                    return
+                end
+                local success, response = pcall(function()
+                    return game:HttpGet(url)
+                end)
+                if success and response and #response > 100 then
+                    writefile(cacheFileName, response)
+                    imageObject.Image = getcustomasset(cacheFileName)
+                end
+            end
+        end)
+    end)
+end
+
+local function getTargetScale(targetWidth, targetHeight)
+    local camera = Workspace.CurrentCamera
+    local viewport = camera and camera.ViewportSize or Vector2.new(1280, 720)
+    local scaleX = (viewport.X - 24) / targetWidth
+    local scaleY = (viewport.Y - 24) / targetHeight
+    local minScale = math.min(scaleX, scaleY)
+    return minScale < 1 and math.max(minScale, 0.45) or 1
+end
+
+-- ==================== CRIAR SCREEN GUI ====================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CharlesxzzInfinityHub"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.DisplayOrder = 999999
+
+pcall(function()
+    screenGui.Parent = playerGui
+end)
+if not screenGui.Parent then
+    pcall(function()
+        screenGui.Parent = game:GetService("CoreGui")
+    end)
+end
+
+-- ==================== BOTÃO FLUTUANTE ====================
+local toggleButton = Instance.new("ImageButton")
+toggleButton.Name = "ToggleButton"
+toggleButton.Size = CONFIG.BUTTON_SIZE
+toggleButton.Position = CONFIG.BUTTON_POSITION
+toggleButton.BackgroundColor3 = CONFIG.BG_COLOR
+toggleButton.BorderSizePixel = 0
+toggleButton.AutoButtonColor = false
+toggleButton.Active = true
+toggleButton.Visible = false
+toggleButton.ZIndex = 1000
+toggleButton.Parent = screenGui
+
+local buttonScale = Instance.new("UIScale", toggleButton)
+buttonScale.Scale = 0
+Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 15)
+
+local buttonStroke = Instance.new("UIStroke", toggleButton)
+buttonStroke.Color = Color3.fromRGB(190, 190, 190)
+buttonStroke.Thickness = 1.2
+buttonStroke.Transparency = 0.35
+
+loadRemoteImage(toggleButton, CONFIG.BUTTON_IMAGE_URL, "charlesxzz_icon_v2.png")
+
+local closeText = Instance.new("TextLabel", toggleButton)
+closeText.Name = "CloseText"
+closeText.Size = UDim2.new(1, 0, 1, 0)
+closeText.BackgroundTransparency = 1
+closeText.Text = ""
+closeText.TextColor3 = CONFIG.ACCENT_COLOR
+closeText.TextSize = 26
+closeText.Font = Enum.Font.GothamBold
+closeText.ZIndex = 1001
+applyTextReadability(closeText, 0.25)
+
+-- ==================== PAINEL PRINCIPAL ====================
+local mainPanel = Instance.new("Frame", screenGui)
+mainPanel.Name = "MainPanel"
+mainPanel.Size = UDim2.new(0, CONFIG.PANEL_WIDTH, 0, CONFIG.PANEL_HEIGHT)
+mainPanel.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+mainPanel.BackgroundColor3 = CONFIG.BG_COLOR
+mainPanel.BackgroundTransparency = 0.08
+mainPanel.BorderSizePixel = 0
+mainPanel.Visible = false
+mainPanel.ClipsDescendants = true
+mainPanel.Active = true
+mainPanel.ZIndex = 999
+
+local mainPanelScale = Instance.new("UIScale", mainPanel)
+mainPanelScale.Scale = 0
+Instance.new("UICorner", mainPanel).CornerRadius = UDim.new(0, 12)
+
+local panelStroke = Instance.new("UIStroke", mainPanel)
+panelStroke.Color = Color3.fromRGB(150, 150, 150)
+panelStroke.Thickness = 1
+panelStroke.Transparency = 0.55
+
+local bgImage = Instance.new("ImageLabel", mainPanel)
+bgImage.Name = "BackgroundImage"
+bgImage.Size = UDim2.new(1, 0, 1, 0)
+bgImage.BackgroundTransparency = 1
+bgImage.ImageTransparency = 0.62
+bgImage.ScaleType = Enum.ScaleType.Crop
+bgImage.ZIndex = 998
+
+loadRemoteImage(bgImage, CONFIG.BG_IMAGE_URL, "charlesxzz_bg_v2.png")
+
+-- ==================== CABEÇALHO + FPS / MS / HORÁRIO ====================
+local titleFrame = Instance.new("Frame", mainPanel)
+titleFrame.Name = "TitleFrame"
+titleFrame.Size = UDim2.new(1, 0, 0, 50)
+titleFrame.BackgroundColor3 = Color3.fromRGB(14, 14, 14)
+titleFrame.BackgroundTransparency = 0.12
+titleFrame.BorderSizePixel = 0
+titleFrame.ZIndex = 1000
+
+Instance.new("UICorner", titleFrame).CornerRadius = UDim.new(0, 12)
+
+local titleLabel = Instance.new("TextLabel", titleFrame)
+titleLabel.Size = UDim2.new(0, 250, 1, 0)
+titleLabel.Position = UDim2.new(0, 16, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "🥷 CHARLESXZZ INFINITY HUB"
+titleLabel.TextColor3 = CONFIG.ACCENT_COLOR
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.GothamBlack
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.ZIndex = 1001
+applyTextReadability(titleLabel, 0.45)
+
+local statusBar = Instance.new("Frame", titleFrame)
+statusBar.Name = "StatusBar"
+statusBar.Size = UDim2.new(0, 348, 0, 32)
+statusBar.Position = UDim2.new(1, -14, 0.5, 0)
+statusBar.AnchorPoint = Vector2.new(1, 0.5)
+statusBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+statusBar.BackgroundTransparency = 0.15
+statusBar.BorderSizePixel = 0
+statusBar.ZIndex = 1001
+
+Instance.new("UICorner", statusBar).CornerRadius = UDim.new(0, 8)
+local statusStroke = Instance.new("UIStroke", statusBar)
+statusStroke.Color = Color3.fromRGB(70, 70, 70)
+statusStroke.Thickness = 1
+statusStroke.Transparency = 0.55
+
+local fpsLabel = Instance.new("TextLabel", statusBar)
+fpsLabel.Size = UDim2.new(0, 74, 1, 0)
+fpsLabel.Position = UDim2.new(0, 8, 0, 0)
+fpsLabel.BackgroundTransparency = 1
+fpsLabel.Text = "FPS: 60"
+fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+fpsLabel.TextSize = 11
+fpsLabel.Font = Enum.Font.GothamBold
+fpsLabel.ZIndex = 1002
+
+local msLabel = Instance.new("TextLabel", statusBar)
+msLabel.Size = UDim2.new(0, 80, 1, 0)
+msLabel.Position = UDim2.new(0, 84, 0, 0)
+msLabel.BackgroundTransparency = 1
+msLabel.Text = "MS: 50"
+msLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+msLabel.TextSize = 11
+msLabel.Font = Enum.Font.GothamBold
+msLabel.ZIndex = 1002
+
+local timeDateLabel = Instance.new("TextLabel", statusBar)
+timeDateLabel.Size = UDim2.new(1, -170, 1, 0)
+timeDateLabel.Position = UDim2.new(1, -8, 0, 0)
+timeDateLabel.AnchorPoint = Vector2.new(1, 0)
+timeDateLabel.BackgroundTransparency = 1
+timeDateLabel.Text = os.date("%d/%m/%Y | %H:%M:%S")
+timeDateLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+timeDateLabel.TextSize = 11
+timeDateLabel.Font = Enum.Font.GothamBold
+timeDateLabel.TextXAlignment = Enum.TextXAlignment.Right
+timeDateLabel.ZIndex = 1002
+
+local frameCount = 0
+local lastStatUpdate = tick()
+RunService.RenderStepped:Connect(function()
+    frameCount += 1
+    local now = tick()
+    if now - lastStatUpdate >= 0.5 then
+        local elapsed = now - lastStatUpdate
+        local fps = math.floor((frameCount / elapsed) + 0.5)
+        frameCount = 0
+        lastStatUpdate = now
+
+        fpsLabel.Text = "FPS: " .. tostring(fps)
+        if fps >= 50 then
+            fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+        elseif fps >= 30 then
+            fpsLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+        else
+            fpsLabel.TextColor3 = Color3.fromRGB(255, 65, 65)
+        end
+
+        local ping = 0
+        pcall(function()
+            local dataPing = Stats.Network.ServerStatsItem["Data Ping"]
+            if dataPing then ping = math.floor(dataPing:GetValue() + 0.5) end
+        end)
+        if ping <= 0 then
+            pcall(function() ping = math.floor((player:GetNetworkPing() * 1000) + 0.5) end)
+        end
+
+        msLabel.Text = "MS: " .. tostring(ping)
+        if ping <= 90 then
+            msLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+        elseif ping <= 180 then
+            msLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+        else
+            msLabel.TextColor3 = Color3.fromRGB(255, 65, 65)
+        end
+
+        timeDateLabel.Text = os.date("%d/%m/%Y | %H:%M:%S")
+    end
+end)
+
+local separator = Instance.new("Frame", mainPanel)
+separator.Size = UDim2.new(1, -20, 0, 1)
+separator.Position = UDim2.new(0, 10, 0, 50)
+separator.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+separator.BackgroundTransparency = 0.55
+separator.BorderSizePixel = 0
+separator.ZIndex = 1000
+
+-- ==================== ABAS E CONTEÚDO ====================
+local tabsScroll = Instance.new("ScrollingFrame", mainPanel)
+tabsScroll.Name = "TabsScroll"
+tabsScroll.Size = UDim2.new(0, 170, 1, -70)
+tabsScroll.Position = UDim2.new(0, 10, 0, 60)
+tabsScroll.BackgroundTransparency = 1
+tabsScroll.BorderSizePixel = 0
+tabsScroll.ScrollBarThickness = 2
+tabsScroll.ScrollBarImageColor3 = CONFIG.ACCENT_COLOR
+tabsScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+tabsScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+tabsScroll.ZIndex = 1000
+
+local tabsLayout = Instance.new("UIListLayout", tabsScroll)
+tabsLayout.Padding = UDim.new(0, 6)
+tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local contentContainer = Instance.new("Frame", mainPanel)
+contentContainer.Name = "ContentContainer"
+contentContainer.Size = UDim2.new(1, -195, 1, -70)
+contentContainer.Position = UDim2.new(0, 185, 0, 60)
+contentContainer.BackgroundTransparency = 1
+contentContainer.BorderSizePixel = 0
+contentContainer.ZIndex = 1000
+
+local tabs = {}
+local activeTabName = nil
+
+local function createTab(tabName, tabEmoji)
+    local tabBtn = Instance.new("TextButton", tabsScroll)
+    tabBtn.Name = tabName .. "TabBtn"
+    tabBtn.Size = UDim2.new(1, 0, 0, 36)
+    tabBtn.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    tabBtn.BackgroundTransparency = 0.15
+    tabBtn.BorderSizePixel = 0
+    tabBtn.Text = " " .. tabEmoji .. "  " .. tabName
+    tabBtn.TextColor3 = Color3.fromRGB(215, 215, 215)
+    tabBtn.TextSize = 12
+    tabBtn.Font = Enum.Font.GothamBold
+    tabBtn.TextXAlignment = Enum.TextXAlignment.Left
+    tabBtn.AutoButtonColor = false
+    tabBtn.Active = true
+    tabBtn.ZIndex = 1001
+
+    Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 8)
+
+    local tabContentScroll = Instance.new("ScrollingFrame", contentContainer)
+    tabContentScroll.Name = tabName .. "Content"
+    tabContentScroll.Size = UDim2.new(1, 0, 1, 0)
+    tabContentScroll.BackgroundTransparency = 1
+    tabContentScroll.BorderSizePixel = 0
+    tabContentScroll.ScrollBarThickness = 4
+    tabContentScroll.ScrollBarImageColor3 = CONFIG.ACCENT_COLOR
+    tabContentScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    tabContentScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    tabContentScroll.Visible = false
+    tabContentScroll.ZIndex = 1001
+
+    local contentLayout = Instance.new("UIListLayout", tabContentScroll)
+    contentLayout.Padding = UDim.new(0, 10)
+    contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local function selectTab()
+        for _, t in pairs(tabs) do
+            t.button.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+            t.button.BackgroundTransparency = 0.15
+            t.button.TextColor3 = Color3.fromRGB(215, 215, 215)
+            t.content.Visible = false
+        end
+        tabBtn.BackgroundColor3 = Color3.fromRGB(48, 48, 48)
+        tabBtn.BackgroundTransparency = 0.08
+        tabBtn.TextColor3 = CONFIG.ACCENT_COLOR
+        tabContentScroll.Visible = true
+        activeTabName = tabName
+    end
+
+    tabBtn.Activated:Connect(selectTab)
+    tabs[tabName] = { button = tabBtn, content = tabContentScroll }
+
+    if not activeTabName then selectTab() end
+    return tabContentScroll
+end
+
+local function addScriptExecutor(targetTabScroll, scriptName, description, scriptUrlOrFunc)
+    local optionFrame = Instance.new("Frame", targetTabScroll)
+    optionFrame.Size = UDim2.new(1, -10, 0, 70)
+    optionFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    optionFrame.BackgroundTransparency = 0.12
+    optionFrame.BorderSizePixel = 0
+    optionFrame.ZIndex = 1002
+
+    Instance.new("UICorner", optionFrame).CornerRadius = UDim.new(0, 8)
+    local optionStroke = Instance.new("UIStroke", optionFrame)
+    optionStroke.Color = Color3.fromRGB(70, 70, 70)
+    optionStroke.Transparency = 0.65
+    optionStroke.Thickness = 1
+
+    local nameLabel = Instance.new("TextLabel", optionFrame)
+    nameLabel.Size = UDim2.new(1, -90, 0, 30)
+    nameLabel.Position = UDim2.new(0, 12, 0, 8)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = scriptName
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.TextSize = 13
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.ZIndex = 1003
+
+    local descLabel = Instance.new("TextLabel", optionFrame)
+    descLabel.Size = UDim2.new(1, -90, 0, 20)
+    descLabel.Position = UDim2.new(0, 12, 0, 38)
+    descLabel.BackgroundTransparency = 1
+    descLabel.Text = description
+    descLabel.TextColor3 = Color3.fromRGB(205, 205, 205)
+    descLabel.TextSize = 11
+    descLabel.Font = Enum.Font.Gotham
+    descLabel.TextXAlignment = Enum.TextXAlignment.Left
+    descLabel.ZIndex = 1003
+
+    local execBtn = Instance.new("TextButton", optionFrame)
+    execBtn.Size = UDim2.new(0, 60, 0, 28)
+    execBtn.Position = UDim2.new(1, -72, 0.5, -14)
+    execBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    execBtn.BorderSizePixel = 0
+    execBtn.Text = "▶"
+    execBtn.TextColor3 = CONFIG.TEXT_COLOR
+    execBtn.TextSize = 14
+    execBtn.Font = Enum.Font.GothamBold
+    execBtn.AutoButtonColor = false
+    execBtn.Active = true
+    execBtn.ZIndex = 1004
+
+    Instance.new("UICorner", execBtn).CornerRadius = UDim.new(0, 6)
+
+    local lastExec = 0
+    execBtn.Activated:Connect(function()
+        local now = tick()
+        if now - lastExec < 0.5 then return end
+        lastExec = now
+
+        execBtn.Text = "..."
+        task.spawn(function()
+            local ok, err = pcall(function()
+                if type(scriptUrlOrFunc) == "function" then
+                    scriptUrlOrFunc()
+                else
+                    loadstring(game:HttpGet(scriptUrlOrFunc))()
+                end
+            end)
+            if ok then
+                sendDiscordLog("⚡ Script Executado", string.format("O jogador ativou o script **%s**\nCategoria: `%s`", scriptName, tostring(activeTabName or "N/A")), 5763719)
+                execBtn.Text = "✔"
+                execBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+                task.wait(1.5)
+                execBtn.Text = "▶"
+                execBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+            else
+                warn("[Infinity Hub] Erro em " .. scriptName .. ": " .. tostring(err))
+                execBtn.Text = "❌"
+                execBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+                task.wait(1.5)
+                execBtn.Text = "▶"
+                execBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+            end
+        end)
+    end)
+end
+
+-- ==================== CRIAÇÃO DAS ABAS ====================
+local avisosTab      = createTab("AVISOS", "📣")
+local otimizacoesTab = createTab("OTIMIZAÇÕES", "🚀")
+local atravessarTab  = createTab("ATRAVESSAR", "🥷")
+local reachTab       = createTab("REACH", "🥊")
+local antPuloTab     = createTab("ANT PULO", "🚫")
+local antPedraTab    = createTab("ANT PEDRA", "🛡️")
+local goleiroTab     = createTab("GOLEIRO/GK", "🧤")
+local hubsOpsTab     = createTab("HUBS OP'S", "💀")
+
+local function addInfoCard(parentScroll, titleText, bodyText, isDiscord)
+    local card = Instance.new("Frame", parentScroll)
+    card.Size = UDim2.new(1, -10, 0, 82)
+    card.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    card.BackgroundTransparency = 0.12
+    card.BorderSizePixel = 0
+    card.ZIndex = 1002
+
+    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    local cStroke = Instance.new("UIStroke", card)
+    cStroke.Color = isDiscord and Color3.fromRGB(88, 101, 242) or Color3.fromRGB(70, 70, 70)
+    cStroke.Thickness = 1
+    cStroke.Transparency = 0.55
+
+    local tLbl = Instance.new("TextLabel", card)
+    tLbl.Size = UDim2.new(1, -24, 0, 24)
+    tLbl.Position = UDim2.new(0, 12, 0, 8)
+    tLbl.BackgroundTransparency = 1
+    tLbl.Text = titleText
+    tLbl.TextColor3 = Color3.fromRGB(255, 215, 0)
+    tLbl.TextSize = 13
+    tLbl.Font = Enum.Font.GothamBold
+    tLbl.ZIndex = 1003
+
+    local bLbl = Instance.new("TextLabel", card)
+    bLbl.Size = UDim2.new(1, -24, 0, 42)
+    bLbl.Position = UDim2.new(0, 12, 0, 32)
+    bLbl.BackgroundTransparency = 1
+    bLbl.Text = bodyText
+    bLbl.TextColor3 = Color3.fromRGB(245, 245, 245)
+    bLbl.TextSize = 11
+    bLbl.Font = Enum.Font.Gotham
+    bLbl.TextWrapped = true
+    bLbl.TextXAlignment = Enum.TextXAlignment.Left
+    bLbl.ZIndex = 1003
+
+    if isDiscord then
+        local copyBtn = Instance.new("TextButton", card)
+        copyBtn.Size = UDim2.new(0, 110, 0, 26)
+        copyBtn.Position = UDim2.new(1, -122, 0, 8)
+        copyBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+        copyBtn.Text = "COPIAR DISCORD"
+        copyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        copyBtn.TextSize = 10
+        copyBtn.Font = Enum.Font.GothamBold
+        copyBtn.ZIndex = 1004
+        Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0, 6)
+
+        copyBtn.Activated:Connect(function()
+            pcall(function()
+                if setclipboard then setclipboard(CONFIG.DISCORD_LINK) end
+            end)
+            copyBtn.Text = "✔ COPIADO!"
+            copyBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
+            task.wait(2)
+            copyBtn.Text = "COPIAR DISCORD"
+            copyBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+        end)
+    end
+end
+
+-- ==================== CONTEÚDO DAS ABAS ====================
+addInfoCard(avisosTab, "🥷 STATUS DO PAINEL: ONLINE", "Bem-vindo ao Charlesxzz Infinity Hub! Escolha uma categoria ao lado e clique no botão verde (▶) para ativar o script desejado.", false)
+addInfoCard(avisosTab, "💬 COMUNIDADE OFICIAL", "Acesse nosso servidor: " .. CONFIG.DISCORD_LINK, true)
+addInfoCard(avisosTab, "📱 COMPATIBILIDADE TOTAL", "Otimizado para Delta, Fluxus, Arceus X, Hydrogen e executores de PC.", false)
+
+-- Otimizações (20)
+addScriptExecutor(otimizacoesTab, "1. SLOW OPTIMIZER 🥷", "Otimizador leve", "https://pastefy.app/tSoOifGr/raw")
+addScriptExecutor(otimizacoesTab, "2. ANT LAG 🧟", "Anti-lag universal", "https://pastebin.com/raw/kbHL8MZ5")
+addScriptExecutor(otimizacoesTab, "3. FPS BOOST PHAMTOM ♾️", "Aumentador de FPS Phantom", "https://rawscripts.net/raw/Universal-Script-PHANTOM-FPS-BOOSTER-136220")
+addScriptExecutor(otimizacoesTab, "4. ANT LAG MAX POTATO 🥔", "Modo batata máximo", "https://raw.githubusercontent.com/ashmehra852-lab/AshishAntiLag.Luaa/refs/heads/main/AshishAntialag.LUA")
+addScriptExecutor(otimizacoesTab, "5. MOBILISTRAP ( MOBILE ) 📱", "Masterstrap mobile booster", "https://rawscripts.net/raw/Universal-Script-Masterstrap-239143")
+addScriptExecutor(otimizacoesTab, "6. ASTRO OTIMIZAÇÃO SCRIPT 🔥", "Astro otimização booster", "https://pastebin.com/raw/MVUsQvub")
+addScriptExecutor(otimizacoesTab, "7. ANGOLANO OTIMIZAÇÃO 🇦🇴", "Otimizador Angolano", "https://pastebin.com/raw/T6kRs3Fw")
+addScriptExecutor(otimizacoesTab, "8. GFX OPTIMIZER PRO 🎮", "GFX otimizador profissional", "https://raw.githubusercontent.com/Masterstrap/Mobilestrap/main/script.lua")
+addScriptExecutor(otimizacoesTab, "9. OTIMIZAÇÃO EXTRA ❗", "Otimização adicional", "https://pastebin.com/raw/0dtZF46h")
+addScriptExecutor(otimizacoesTab, "10. OTIMIZAÇÃO SILVAXX V1 🇵🇹", "Silvaxx booster v1", "https://pastefy.app/SgBX3S6J/raw")
+addScriptExecutor(otimizacoesTab, "11. ASHSI ANT LAG 👑", "Ashsi antilag avançado", "https://raw.githubusercontent.com/ashmehra852-lab/AshishAntiLag.Luaa/refs/heads/main/AshishAntialag.LUA")
+addScriptExecutor(otimizacoesTab, "12. MEGA OTIMIZAÇÃO BROOKHAVEN 🏡", "Focado em Brookhaven", "https://pastebin.com/raw/GzrqQWkx")
+addScriptExecutor(otimizacoesTab, "13. OTIMIZAÇÃO MUDAR COR DO CAMPO 🎨", "Muda a cor do campo para FPS", "https://pastebin.com/raw/Zfjqvyzn")
+addScriptExecutor(otimizacoesTab, "14. LINHA TRANSPARENTE 🫙", "Linhas transparentes otimizadas", "https://pastebin.com/raw/RbC506TY")
+addScriptExecutor(otimizacoesTab, "15. OTIMIZAÇÃO ULTRA 🚀", "Davzx Hub Fix Lag Ultra", "https://raw.githubusercontent.com/Davzxxfixroblox/DavzxHubFixLag/refs/heads/main/FixLagHub")
+addScriptExecutor(otimizacoesTab, "16. BROOKHAVEN OTIMIZAÇÃO GOAT 🧩", "Otimizador Goat", "https://pastebin.com/raw/5DK3dz5Y")
+addScriptExecutor(otimizacoesTab, "17. OTMIZAÇÃO XD 🔑 (Key: xdfree25)", "Requer key: xdfree25", "https://pastebin.com/raw/Fp4FDdaS")
+addScriptExecutor(otimizacoesTab, "18. OTIMIZAÇÃO BLX FTRS II 🇧🇷", "Mazes Low GFX Optimizer", "https://rawscripts.net/raw/Universal-Script-MAZES-LOW-GFX-OPTIMIZER-MORE-FPS-115973")
+addScriptExecutor(otimizacoesTab, "19. OTIMIZAÇÃO MAGNO 🧙♀️", "Magno script booster", "https://pastefy.app/bjE0MJ2F/raw")
+addScriptExecutor(otimizacoesTab, "20. OTIMIZAÇÃO JVZ 😜", "JVZ booster script", "https://gist.githubusercontent.com/zzckyz-wq/881545df5452379bb50c65bf7dda31bb/raw/934756f9a13518c1636978cd2eed318f67338595/gistfile1.txt")
+
+-- Atravessar (8)
+addScriptExecutor(atravessarTab, "1. MASTER HUB 🔥", "Master Hub universal", "https://pastefy.app/dbhX7SOA/raw")
+addScriptExecutor(atravessarTab, "2. CONDUÇÃO LANCASTER 🙊", "Condução Lancaster script", "https://pastebin.com/raw/c27sEpVh")
+addScriptExecutor(atravessarTab, "3. ATRAVESSAR ZYCK BALL BRANCA 🚫", "Zyck ball branca noclip", "https://pastefy.app/UyL8ic0V/raw")
+addScriptExecutor(atravessarTab, "4. ATRAVESSAR DO THEUS 👟", "Atravessar Theus", "https://pastefy.app/7e1VxPgW/raw")
+addScriptExecutor(atravessarTab, "5. ATRAVESSAR JVZ 🥵", "Atravessar JVZ", "https://pastefy.app/cKpzcuHw/raw")
+addScriptExecutor(atravessarTab, "6. ATRAVESSAR SELETIVO MOB 🔥", "Seletivo Mobile noclip", "https://pastefy.app/z7GBu0u9/raw")
+addScriptExecutor(atravessarTab, "7. ATRAVESSAR SUPREMO 🥷", "Atravessar Supremo", "https://pastefy.app/KdhVVlaC/raw")
+addScriptExecutor(atravessarTab, "8. ATRAVESSAR GALAXY SELETIVO ♾️", "Galaxy seletivo noclip", "https://pastefy.app/ZoMQUQSi/raw")
+
+-- Reach (5)
+addScriptExecutor(reachTab, "1. REACH THEUS V2 🔥", "Reach Theus V2", "https://pastebin.com/raw/pm4pyxm4")
+addScriptExecutor(reachTab, "2. REACH MORALES 🐵", "Reach Morales", "https://pastefy.app/ckJb1cXM/raw")
+addScriptExecutor(reachTab, "3. REACH DO FOLDEN 🍆", "Reach do Folden", "https://pastefy.app/F8vi6l45/raw")
+addScriptExecutor(reachTab, "4. REACH DO CHARLESXZZ", "Reach do Charlesxzz", "https://pastefy.app/UyL8ic0V/raw")
+addScriptExecutor(reachTab, "5. REACH...? ❓", "Reach alternativo", "https://pastebin.com/raw/pm4pyxm4")
+
+-- Ant Pulo (11)
+addScriptExecutor(antPuloTab, "1. ANT PULO ITZX 👌", "Anti-pulo Itzx", "https://pastefy.app/KEfkfhsr/raw")
+addScriptExecutor(antPuloTab, "2. ANT PULO + ATRAVESSAR + EMPURRAR 🛡️", "Anti-pulo com funções extras", "https://pastefy.app/sIhEJFAz/raw")
+addScriptExecutor(antPuloTab, "3. ANT PULO FOLDENXZZ 🔒", "Anti-pulo Foldenxzz", "https://pastebin.com/raw/d2T3QxGt")
+addScriptExecutor(antPuloTab, "4. LC PJL ANT PULO 🧊", "LC PJL Anti-pulo", "https://pastebin.com/raw/MCTcaHZq")
+addScriptExecutor(antPuloTab, "5. ANTI PULO ELIAS 🚫", "Anti-pulo Elias", "https://pastebin.com/raw/mgzrnsbr")
+addScriptExecutor(antPuloTab, "6. OTIMIZAÇÃO ANT PULO + BALL BRANCA ⚽", "Anti-pulo e otimização", "https://pastebin.com/raw/gX2QzCQ4")
+addScriptExecutor(antPuloTab, "7. JAY ANT PULO 🚷", "Jay Anti-pulo", "https://pastebin.com/raw/1MmUWYnP")
+addScriptExecutor(antPuloTab, "8. LOUIS HUB ANT PULO 🥷", "Louis Hub Anti-pulo", "https://pastebin.com/raw/Wi0eecQv")
+addScriptExecutor(antPuloTab, "9. IPHONE HUB 📱", "Iphone Hub script", "https://pastebin.com/raw/6tEX6gj8")
+
+addScriptExecutor(antPuloTab, "10. ANT PULO MORETI HUB 🌈", "Ant Pulo Moretti", function()
+    local p = game.Players.LocalPlayer
+    local rs = game:GetService("RunService")
+    local g = Instance.new("ScreenGui", game.CoreGui)
+    g.ResetOnSpawn = false
+    local m = Instance.new("Frame", g)
+    m.Size = UDim2.new(0, 270, 0, 180)
+    m.Position = UDim2.new(0.5, -135, 0.5, -90)
+    m.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    m.Active = true
+    m.Draggable = true
+    Instance.new("UICorner", m)
+    local t = Instance.new("TextLabel", m)
+    t.Size = UDim2.new(1, 0, 0, 40)
+    t.Text = "Anti Pulo Moretti"
+    t.TextScaled = true
+    local function bt(n, y)
+        local b = Instance.new("TextButton", m)
+        b.Size = UDim2.new(0.9, 0, 0, 40)
+        b.Position = UDim2.new(0.05, 0, 0, y)
+        b.Text = n
+        b.TextScaled = true
+        Instance.new("UICorner", b)
+        return b
+    end
+    local a = false
+    rs.RenderStepped:Connect(function()
+        if a and p.Character and p.Character:FindFirstChild("Humanoid") then
+            p.Character.Humanoid.JumpPower = 0
+        end
+    end)
+    local aB = bt(" Anti-Pulo [OFF]", 50)
+    aB.MouseButton1Click:Connect(function()
+        a = not a
+        aB.Text = a and " Anti-Pulo [ON]" or " Anti-Pulo [OFF]"
+        if not a and p.Character and p.Character:FindFirstChild("Humanoid") then
+            p.Character.Humanoid.JumpPower = 50
+        end
+    end)
+    local oB = bt(" Otimização", 100)
+    oB.MouseButton1Click:Connect(function()
+        for _, o in pairs(workspace:GetDescendants()) do
+            if o:IsA("ParticleEmitter") or o:IsA("Trail") or o:IsA("Smoke") then
+                o.Enabled = false
+            elseif o:IsA("Decal") then
+                o.Transparency = 1
+            end
+        end
+        oB.Text = " Otimização [OK]"
+    end)
+end)
+
+addScriptExecutor(antPuloTab, "11. PEIDO GULOSO HUB KKK 😂", "Peido Guloso Hub", function()
+    local p = game.Players.LocalPlayer
+    local rs = game:GetService("RunService")
+    local g = Instance.new("ScreenGui", game.CoreGui)
+    g.ResetOnSpawn = false
+    local m = Instance.new("Frame", g)
+    m.Size = UDim2.new(0, 270, 0, 180)
+    m.Position = UDim2.new(0.5, -135, 0.5, -90)
+    m.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    m.Active = true
+    m.Draggable = true
+    Instance.new("UICorner", m)
+    local t = Instance.new("TextLabel", m)
+    t.Size = UDim2.new(1, 0, 0, 40)
+    t.Text = "Peido Guloso"
+    t.TextScaled = true
+    local function bt(n, y)
+        local b = Instance.new("TextButton", m)
+        b.Size = UDim2.new(0.9, 0, 0, 40)
+        b.Position = UDim2.new(0.05, 0, 0, y)
+        b.Text = n
+        b.TextScaled = true
+        Instance.new("UICorner", b)
+        return b
+    end
+    local aP, aJ = false, false
+    rs.RenderStepped:Connect(function()
+        local c = p.Character
+        if c and c:FindFirstChild("Humanoid") then
+            if aJ then c.Humanoid.JumpPower = 0 end
+        end
+    end)
+    local pB = bt(" Anti-Pedra [OFF]", 50)
+    pB.MouseButton1Click:Connect(function()
+        aP = not aP
+        pB.Text = aP and " Anti-Pedra [ON]" or " Anti-Pedra [OFF]"
+    end)
+    local jB = bt(" Anti-Pulo [OFF]", 100)
+    jB.MouseButton1Click:Connect(function()
+        aJ = not aJ
+        jB.Text = aJ and " Anti-Pulo [ON]" or " Anti-Pulo [OFF]"
+        if not aJ and p.Character and p.Character:FindFirstChild("Humanoid") then
+            p.Character.Humanoid.JumpPower = 50
+        end
+    end)
+end)
+
+-- Ant Pedra (3)
+addScriptExecutor(antPedraTab, "1. ANTI BALL PEDRA + ATRAVESSAR 🛡️", "Anti ball pedra com atravessar", "https://pastebin.com/raw/Z7eZDEj8")
+addScriptExecutor(antPedraTab, "2. ANTI BALL PEDRA (SEM BUG DE COLISÃO) 🧱", "Anti ball pedra sem bug de colisão", "https://pastefy.app/59dDHHfr/raw")
+addScriptExecutor(antPedraTab, "3. ANTI PEDRA LEVE DMS 🗿", "Anti pedra super leve", "https://pastefy.app/shBZ8LTN/raw")
+
+-- Goleiro/GK (3)
+addScriptExecutor(goleiroTab, "1. MURALHA HUB 🧤", "Muralha Hub para goleiros", "https://pastebin.com/raw/KmNHLYsb")
+addScriptExecutor(goleiroTab, "2. YASHIN HUB 🛡️", "Yashin Hub para goleiros", "https://pastebin.com/raw/UxtmMHm1")
+addScriptExecutor(goleiroTab, "3. DEFENDER / GKGOAT HUB 🧱", "Defender & GKGOAT Hub para goleiros", "https://pastebin.com/raw/FaBkfBHr")
+
+-- Hubs OP's (23)
+addScriptExecutor(hubsOpsTab, "1. ARMANDO HUB 🤌", "Armando Hub OP", "https://pastebin.com/raw/9uJjEgB1")
+addScriptExecutor(hubsOpsTab, "2. WATER HUB 🌊", "Water Hub OP", "https://pastefy.app/iQzbaBGE/raw")
+addScriptExecutor(hubsOpsTab, "3. ZICK CONTROL 🥵 (Key: 123ZYCK)", "Zick Control (Key: 123ZYCK)", "https://pastefy.app/pA4bytOQ/raw")
+addScriptExecutor(hubsOpsTab, "4. ANGELO HUB 🇧🇷", "Angelo Hub OP", "https://pastefy.app/679CyrEi/raw")
+addScriptExecutor(hubsOpsTab, "5. X HUB ❌", "X Hub OP", "https://pastefy.app/yXuzlTpQ/raw")
+addScriptExecutor(hubsOpsTab, "6. LUKINHAS HUB 🤝", "Lukinhas Hub OP", "https://pastebin.com/raw/dhxQnF4b")
+addScriptExecutor(hubsOpsTab, "7. CANTONA HUB 🎶", "Cantona Hub OP", "https://pastefy.app/Ul55j8hu/raw")
+addScriptExecutor(hubsOpsTab, "8. CONDUÇÃO HUB 💢", "Condução Hub OP", "https://pastebin.com/raw/YDLgPkBf")
+addScriptExecutor(hubsOpsTab, "9. KRTOM HUB 🥷", "Krtom Hub OP", "https://pastefy.app/ruqQnDNd/raw")
+addScriptExecutor(hubsOpsTab, "10. LEGENDARY HUB 👑 (Key: LTZ3-CALV-99GG)", "Legendary Hub (Key: LTZ3-CALV-99GG)", "https://pastebin.com/raw/hgZyyWTW")
+addScriptExecutor(hubsOpsTab, "11. OLISE HUB ⚽", "Olise Hub OP", "https://pastefy.app/QtvxMoUW/raw")
+addScriptExecutor(hubsOpsTab, "12. ULTRA HUB 🔥", "Ultra Hub OP", "https://pastefy.app/dbhX7SOA/raw")
+addScriptExecutor(hubsOpsTab, "13. NEY HUB 🇧🇷", "Ney Hub OP", "https://pastefy.app/vuY3rgeZ/raw")
+addScriptExecutor(hubsOpsTab, "14. HUB FOLDENXZZ 💻", "Hub Foldenxzz OP", "https://pastefy.app/4ZLLWjRv/raw")
+addScriptExecutor(hubsOpsTab, "15. TIZIL HUB 💥 (Key: TIZILCV)", "Tizil Hub (Key: TIZILCV)", "https://pastefy.app/qAI4jFAP/raw")
+addScriptExecutor(hubsOpsTab, "16. ARMANDO JR HUB 🔥", "Armando Jr Hub OP", "https://raw.githubusercontent.com/carlosedut11/ArmadinhoJrPorCantonaJr/refs/heads/main/ArmadinhoJrPorCantonaJr.lua")
+addScriptExecutor(hubsOpsTab, "17. SFORZA HUB 🥶", "Sforza Hub OP", "https://pastebin.com/raw/pdyfSjzK")
+addScriptExecutor(hubsOpsTab, "18. CAGA NA ROUPA HUB 💩", "Caga na Roupa Hub OP", "https://pastefy.app/eKFExNPG/raw")
+addScriptExecutor(hubsOpsTab, "19. PIRULITO HUB 🍭", "Pirulito Hub OP", "https://pastebin.com/raw/A0xCHTGM")
+addScriptExecutor(hubsOpsTab, "20. FREEZER HUB 🥶", "Freezer Hub OP", "https://pastefy.app/bWS31I8q/raw")
+addScriptExecutor(hubsOpsTab, "21. NOVA ERA HUB 💎", "Nova Era Hub OP", "https://pastefy.app/zrszTIQx/raw")
+addScriptExecutor(hubsOpsTab, "22. HUNK HUB 🎮", "Hunk Hub OP", "https://pastefy.app/ZGDUJNWr/raw")
+addScriptExecutor(hubsOpsTab, "23. PIU HUB V5 🥷", "Piu Hub V5 OP", "https://pastefy.app/ZTjSqELh/raw")
+
+-- ==================== CONTROLE DO PAINEL E ARRASTAR ====================
+local isOpen = false
+local animating = false
+
+local function togglePanel()
+    if animating then return end
+    animating = true
+
+    isOpen = not isOpen
+    if isOpen then
+        local targetScale = getTargetScale(CONFIG.PANEL_WIDTH, CONFIG.PANEL_HEIGHT)
+        mainPanel.Visible = true
+        mainPanelScale.Scale = 0
+        TweenService:Create(mainPanelScale, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = targetScale }):Play()
+        closeText.Text = "✕"
+        task.wait(0.28)
+    else
+        TweenService:Create(mainPanelScale, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 0 }):Play()
+        task.wait(0.22)
+        mainPanel.Visible = false
+        closeText.Text = ""
+    end
+    animating = false
+end
+
+local dragging = false
+local dragStart, startPos
+local dragCheck = false
+
+toggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = toggleButton.Position
+        dragCheck = false
+
+        local connection
+        connection = input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+                connection:Disconnect()
+                if not dragCheck then togglePanel() end
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then dragCheck = true end
+        if dragCheck then
+            toggleButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end
+end)
+
+-- ==================== TELA DE CARREGAMENTO ====================
+local loadingOverlay = Instance.new("Frame", screenGui)
+loadingOverlay.Name = "LoadingOverlay"
+loadingOverlay.Size = UDim2.new(1, 0, 1, 0)
+loadingOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+loadingOverlay.BackgroundTransparency = 1
+loadingOverlay.BorderSizePixel = 0
+loadingOverlay.ZIndex = 3000
+
+local loadingBox = Instance.new("Frame", loadingOverlay)
+loadingBox.Name = "LoadingBox"
+loadingBox.Size = UDim2.new(0, 340, 0, 110)
+loadingBox.Position = UDim2.new(0.5, 0, 0.5, 0)
+loadingBox.AnchorPoint = Vector2.new(0.5, 0.5)
+loadingBox.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+loadingBox.BorderSizePixel = 0
+loadingBox.ClipsDescendants = true
+loadingBox.ZIndex = 3001
+
+local loadingScale = Instance.new("UIScale", loadingBox)
+loadingScale.Scale = 0
+Instance.new("UICorner", loadingBox).CornerRadius = UDim.new(0, 12)
+
+local loadingStroke = Instance.new("UIStroke", loadingBox)
+loadingStroke.Thickness = 1.2
+loadingStroke.Transparency = 0.42
+loadingStroke.Color = Color3.fromRGB(200, 70, 70)
+
+local loadingTitle = Instance.new("TextLabel", loadingBox)
+loadingTitle.Size = UDim2.new(1, -24, 0, 28)
+loadingTitle.Position = UDim2.new(0, 12, 0, 14)
+loadingTitle.BackgroundTransparency = 1
+loadingTitle.Text = "🥷 CHARLESXZZ INFINITY HUB"
+loadingTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadingTitle.TextSize = 15
+loadingTitle.Font = Enum.Font.GothamBlack
+loadingTitle.ZIndex = 3002
+
+local loadingStatus = Instance.new("TextLabel", loadingBox)
+loadingStatus.Size = UDim2.new(1, -24, 0, 20)
+loadingStatus.Position = UDim2.new(0, 12, 0, 44)
+loadingStatus.BackgroundTransparency = 1
+loadingStatus.Text = "Verificando sistema... 0%"
+loadingStatus.TextColor3 = Color3.fromRGB(220, 220, 220)
+loadingStatus.TextSize = 12
+loadingStatus.Font = Enum.Font.GothamMedium
+loadingStatus.ZIndex = 3002
+
+local barBg = Instance.new("Frame", loadingBox)
+barBg.Size = UDim2.new(1, -32, 0, 14)
+barBg.Position = UDim2.new(0, 16, 0, 76)
+barBg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+barBg.BorderSizePixel = 0
+barBg.ZIndex = 3002
+Instance.new("UICorner", barBg).CornerRadius = UDim.new(1, 0)
+
+local barFill = Instance.new("Frame", barBg)
+barFill.Size = UDim2.new(0, 0, 1, 0)
+barFill.BackgroundColor3 = Color3.fromRGB(200, 70, 70)
+barFill.BorderSizePixel = 0
+barFill.ZIndex = 3003
+Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
+
+-- ==================== TELA DE KEY SYSTEM ====================
+local keyOverlay = Instance.new("Frame", screenGui)
+keyOverlay.Name = "KeyOverlay"
+keyOverlay.Size = UDim2.new(1, 0, 1, 0)
+keyOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+keyOverlay.BackgroundTransparency = 1
+keyOverlay.BorderSizePixel = 0
+keyOverlay.Visible = false
+keyOverlay.Active = true
+keyOverlay.ZIndex = 2500
+
+local keyBox = Instance.new("Frame", keyOverlay)
+keyBox.Name = "KeyBox"
+keyBox.Size = UDim2.new(0, CONFIG.PANEL_WIDTH, 0, CONFIG.PANEL_HEIGHT)
+keyBox.Position = UDim2.new(0.5, 0, 0.5, 0)
+keyBox.AnchorPoint = Vector2.new(0.5, 0.5)
+keyBox.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+keyBox.BorderSizePixel = 0
+keyBox.ClipsDescendants = true
+keyBox.ZIndex = 2501
+
+local keyScale = Instance.new("UIScale", keyBox)
+keyScale.Scale = 0
+Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0, 14)
+
+local keyStroke = Instance.new("UIStroke", keyBox)
+keyStroke.Thickness = 1.2
+keyStroke.Transparency = 0.45
+keyStroke.Color = Color3.fromRGB(200, 70, 70)
+
+local keyBg = Instance.new("ImageLabel", keyBox)
+keyBg.Name = "KeyBackgroundImage"
+keyBg.Size = UDim2.new(1, 0, 1, 0)
+keyBg.BackgroundTransparency = 1
+keyBg.ImageTransparency = 0.42
+keyBg.ScaleType = Enum.ScaleType.Crop
+keyBg.ZIndex = 2501
+
+local keyDarkTint = Instance.new("Frame", keyBox)
+keyDarkTint.Size = UDim2.new(1, 0, 1, 0)
+keyDarkTint.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+keyDarkTint.BackgroundTransparency = 0.25
+keyDarkTint.BorderSizePixel = 0
+keyDarkTint.ZIndex = 2502
+
+loadRemoteImage(keyBg, CONFIG.KEY_BG_URL, "charlesxzz_key_bg_v1.png")
+
+local keyTitle = Instance.new("TextLabel", keyBox)
+keyTitle.Size = UDim2.new(1, -40, 0, 42)
+keyTitle.Position = UDim2.new(0, 20, 0, 35)
+keyTitle.BackgroundTransparency = 1
+keyTitle.Text = "🔐 CHARLESXZZ INFINITY HUB - SISTEMA DE KEY"
+keyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyTitle.TextSize = 20
+keyTitle.Font = Enum.Font.GothamBlack
+keyTitle.ZIndex = 2503
+applyTextReadability(keyTitle, 0.25)
+
+local keySub = Instance.new("TextLabel", keyBox)
+keySub.Size = UDim2.new(1, -80, 0, 48)
+keySub.Position = UDim2.new(0.5, 0, 0, 90)
+keySub.AnchorPoint = Vector2.new(0.5, 0)
+keySub.BackgroundTransparency = 1
+keySub.Text = "Insira sua Key abaixo para liberar o acesso ao painel ou clique em PEGAR KEY para copiar o link da nossa comunidade:"
+keySub.TextColor3 = Color3.fromRGB(250, 250, 250)
+keySub.TextSize = 14
+keySub.Font = Enum.Font.GothamMedium
+keySub.TextWrapped = true
+keySub.ZIndex = 2503
+applyTextReadability(keySub, 0.35)
+
+local keyInput = Instance.new("TextBox", keyBox)
+keyInput.Name = "KeyInput"
+keyInput.Size = UDim2.new(1, -120, 0, 54)
+keyInput.Position = UDim2.new(0.5, 0, 0, 175)
+keyInput.AnchorPoint = Vector2.new(0.5, 0)
+keyInput.BackgroundColor3 = Color3.fromRGB(14, 14, 14)
+keyInput.BackgroundTransparency = 0.05
+keyInput.BorderSizePixel = 0
+keyInput.PlaceholderText = "Digite ou cole sua Key aqui..."
+keyInput.PlaceholderColor3 = Color3.fromRGB(170, 170, 170)
+keyInput.Text = ""
+keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyInput.TextSize = 16
+keyInput.Font = Enum.Font.GothamBold
+keyInput.ClearTextOnFocus = false
+keyInput.ZIndex = 2503
+
+Instance.new("UICorner", keyInput).CornerRadius = UDim.new(0, 10)
+local inputStroke = Instance.new("UIStroke", keyInput)
+inputStroke.Color = Color3.fromRGB(120, 120, 120)
+inputStroke.Thickness = 1
+inputStroke.Transparency = 0.5
+
+local keyFeedback = Instance.new("TextLabel", keyBox)
+keyFeedback.Size = UDim2.new(1, -80, 0, 34)
+keyFeedback.Position = UDim2.new(0.5, 0, 0, 245)
+keyFeedback.AnchorPoint = Vector2.new(0.5, 0)
+keyFeedback.BackgroundTransparency = 1
+keyFeedback.Text = ""
+keyFeedback.TextColor3 = Color3.fromRGB(255, 70, 70)
+keyFeedback.TextSize = 16
+keyFeedback.Font = Enum.Font.GothamBlack
+keyFeedback.ZIndex = 2503
+applyTextReadability(keyFeedback, 0.2)
+
+local getKeyBtn = Instance.new("TextButton", keyBox)
+getKeyBtn.Size = UDim2.new(0, 240, 0, 54)
+getKeyBtn.Position = UDim2.new(0, 60, 1, -110)
+getKeyBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+getKeyBtn.BorderSizePixel = 0
+getKeyBtn.Text = "📋 PEGAR KEY (DISCORD)"
+getKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+getKeyBtn.TextSize = 14
+getKeyBtn.Font = Enum.Font.GothamBlack
+getKeyBtn.ZIndex = 2503
+Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0, 10)
+
+local verifyKeyBtn = Instance.new("TextButton", keyBox)
+verifyKeyBtn.Size = UDim2.new(0, 240, 0, 54)
+verifyKeyBtn.Position = UDim2.new(1, -60, 1, -110)
+verifyKeyBtn.AnchorPoint = Vector2.new(1, 0)
+verifyKeyBtn.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+verifyKeyBtn.BorderSizePixel = 0
+verifyKeyBtn.Text = "VERIFICAR KEY ▶"
+verifyKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+verifyKeyBtn.TextSize = 14
+verifyKeyBtn.Font = Enum.Font.GothamBlack
+verifyKeyBtn.ZIndex = 2503
+Instance.new("UICorner", verifyKeyBtn).CornerRadius = UDim.new(0, 10)
+
+local verifyStroke = Instance.new("UIStroke", verifyKeyBtn)
+verifyStroke.Thickness = 1.2
+verifyStroke.Transparency = 0.45
+verifyStroke.Color = Color3.fromRGB(200, 70, 70)
+
+-- ==================== TELA DE BEM-VINDOS ====================
+local welcomeOverlay = Instance.new("Frame", screenGui)
+welcomeOverlay.Name = "WelcomeOverlay"
+welcomeOverlay.Size = UDim2.new(1, 0, 1, 0)
+welcomeOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+welcomeOverlay.BackgroundTransparency = 1
+welcomeOverlay.BorderSizePixel = 0
+welcomeOverlay.Visible = false
+welcomeOverlay.Active = true
+welcomeOverlay.ZIndex = 2000
+
+local welcomeFrame = Instance.new("Frame", welcomeOverlay)
+welcomeFrame.Name = "WelcomePanel"
+welcomeFrame.Size = UDim2.new(0, CONFIG.WELCOME_WIDTH, 0, CONFIG.WELCOME_HEIGHT)
+welcomeFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+welcomeFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+welcomeFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+welcomeFrame.BorderSizePixel = 0
+welcomeFrame.ClipsDescendants = true
+welcomeFrame.ZIndex = 2001
+
+local welcomeScale = Instance.new("UIScale", welcomeFrame)
+welcomeScale.Scale = 0
+Instance.new("UICorner", welcomeFrame).CornerRadius = UDim.new(0, 14)
+
+local welcomeStroke = Instance.new("UIStroke", welcomeFrame)
+welcomeStroke.Thickness = 1.2
+welcomeStroke.Transparency = 0.45
+welcomeStroke.Color = Color3.fromRGB(200, 70, 70)
+
+local welcomeBg = Instance.new("ImageLabel", welcomeFrame)
+welcomeBg.Name = "WelcomeBg"
+welcomeBg.Size = UDim2.new(1, 0, 1, 0)
+welcomeBg.BackgroundTransparency = 1
+welcomeBg.ImageTransparency = 0.42
+welcomeBg.ScaleType = Enum.ScaleType.Crop
+welcomeBg.ZIndex = 2001
+
+local darkTint = Instance.new("Frame", welcomeFrame)
+darkTint.Size = UDim2.new(1, 0, 1, 0)
+darkTint.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+darkTint.BackgroundTransparency = 0.25
+darkTint.BorderSizePixel = 0
+darkTint.ZIndex = 2002
+
+loadRemoteImage(welcomeBg, CONFIG.WELCOME_BG_URL, "charlesxzz_welcome_v2.png")
+
+local welcomeTitle = Instance.new("TextLabel", welcomeFrame)
+welcomeTitle.Size = UDim2.new(1, -130, 0, 45)
+welcomeTitle.Position = UDim2.new(0, 20, 0, 10)
+welcomeTitle.BackgroundTransparency = 1
+welcomeTitle.Text = "CHARLESXZZ INFINITY HUB - BEM VINDOS"
+welcomeTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+welcomeTitle.TextSize = 18
+welcomeTitle.Font = Enum.Font.GothamBlack
+welcomeTitle.TextXAlignment = Enum.TextXAlignment.Left
+welcomeTitle.ZIndex = 2003
+applyTextReadability(welcomeTitle, 0.25)
+
+local timerLabel = Instance.new("TextLabel", welcomeFrame)
+timerLabel.Size = UDim2.new(0, 95, 0, 30)
+timerLabel.Position = UDim2.new(1, -115, 0, 17)
+timerLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+timerLabel.BackgroundTransparency = 0.2
+timerLabel.Text = "⏱️ 01:30"
+timerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+timerLabel.TextSize = 14
+timerLabel.Font = Enum.Font.GothamBold
+timerLabel.ZIndex = 2003
+Instance.new("UICorner", timerLabel).CornerRadius = UDim.new(0, 8)
+
+local textScroll = Instance.new("ScrollingFrame", welcomeFrame)
+textScroll.Size = UDim2.new(1, -40, 1, -155)
+textScroll.Position = UDim2.new(0, 20, 0, 68)
+textScroll.BackgroundTransparency = 1
+textScroll.BorderSizePixel = 0
+textScroll.ScrollBarThickness = 4
+textScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+textScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+textScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+textScroll.ZIndex = 2003
+
+local textLayout = Instance.new("UIListLayout", textScroll)
+textLayout.Padding = UDim.new(0, 10)
+textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function addSectionTitle(titleText, order)
+    local lbl = Instance.new("TextLabel", textScroll)
+    lbl.Size = UDim2.new(1, -10, 0, 24)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = titleText
+    lbl.TextColor3 = Color3.fromRGB(255, 215, 0)
+    lbl.TextSize = 15
+    lbl.Font = Enum.Font.GothamBlack
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.LayoutOrder = order
+    lbl.ZIndex = 2004
+    applyTextReadability(lbl, 0.3)
+end
+
+local function addBodyText(bodyText, order)
+    local lbl = Instance.new("TextLabel", textScroll)
+    lbl.Size = UDim2.new(1, -10, 0, 0)
+    lbl.AutomaticSize = Enum.AutomaticSize.Y
+    lbl.BackgroundTransparency = 1
+    lbl.Text = bodyText
+    lbl.TextColor3 = Color3.fromRGB(252, 252, 252)
+    lbl.TextSize = 13
+    lbl.Font = Enum.Font.GothamMedium
+    lbl.TextWrapped = true
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.LayoutOrder = order
+    lbl.ZIndex = 2004
+    applyTextReadability(lbl, 0.45)
+end
+
+addSectionTitle("PALAVRAS DO CRIADOR:", 1)
+addBodyText("Se vc comprou ou ganhou de presente seja de mim ou de outros CRIADORES, gostaria que soubessem que eu criei esse painel com muito amor. O Charlesxzz Infinity Hub é uma das minhas melhores criações!", 2)
+
+addSectionTitle("O QUE É CHARLESXZZ INFINITY HUB?", 3)
+addBodyText("Charlesxzz Infinity Hub é um painel de script criado para jogadores que querem igualar a habilidade entre Mobile, PC e Console, trazendo mais diversão e otimização para o RP!", 4)
+
+local discordBtn = Instance.new("TextButton", textScroll)
+discordBtn.Size = UDim2.new(1, -10, 0, 42)
+discordBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+discordBtn.BorderSizePixel = 0
+discordBtn.Text = "ACESSE NOSSA COMUNIDADE: " .. CONFIG.DISCORD_LINK .. " (CLIQUE PARA COPIAR)"
+discordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+discordBtn.TextSize = 12
+discordBtn.Font = Enum.Font.GothamBold
+discordBtn.TextWrapped = true
+discordBtn.LayoutOrder = 5
+discordBtn.ZIndex = 2004
+Instance.new("UICorner", discordBtn).CornerRadius = UDim.new(0, 8)
+
+discordBtn.Activated:Connect(function()
+    pcall(function() if setclipboard then setclipboard(CONFIG.DISCORD_LINK) end end)
+    discordBtn.Text = "✔ LINK COPIADO!"
+    discordBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 90)
+    task.wait(2.5)
+    discordBtn.Text = "ACESSE NOSSA COMUNIDADE: " .. CONFIG.DISCORD_LINK .. " (CLIQUE PARA COPIAR)"
+    discordBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+end)
+
+local proceedBtn = Instance.new("TextButton", welcomeFrame)
+proceedBtn.Name = "ProceedButton"
+proceedBtn.Size = UDim2.new(1, -40, 0, 52)
+proceedBtn.Position = UDim2.new(0, 20, 1, -68)
+proceedBtn.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+proceedBtn.BorderSizePixel = 0
+proceedBtn.Text = "CLIQUE AQUI PARA PROSSEGUIR ▶"
+proceedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+proceedBtn.TextSize = 16
+proceedBtn.Font = Enum.Font.GothamBlack
+proceedBtn.ZIndex = 2004
+
+Instance.new("UICorner", proceedBtn).CornerRadius = UDim.new(0, 10)
+local proceedStroke = Instance.new("UIStroke", proceedBtn)
+proceedStroke.Thickness = 1.2
+proceedStroke.Transparency = 0.45
+proceedStroke.Color = Color3.fromRGB(200, 70, 70)
+
+-- Animação RGB global
+local hue = 0
+local rgbConnection = RunService.RenderStepped:Connect(function(dt)
+    hue = (hue + dt * 0.22) % 1
+    local softRgbColor = Color3.fromHSV(hue, 0.65, 0.8)
+    if loadingStroke and loadingStroke.Parent then
+        loadingStroke.Color = softRgbColor
+        barFill.BackgroundColor3 = softRgbColor
+    end
+    if keyStroke and keyStroke.Parent then
+        keyStroke.Color = softRgbColor
+        verifyStroke.Color = softRgbColor
+    end
+    if welcomeStroke and welcomeStroke.Parent then
+        welcomeStroke.Color = softRgbColor
+        proceedStroke.Color = softRgbColor
+    end
+end)
+
+-- ==================== FLUXO DE ENTRADA ====================
+local welcomeClosed = false
+
+local function closeWelcomeScreen()
+    if welcomeClosed then return end
+    welcomeClosed = true
+
+    if rgbConnection then rgbConnection:Disconnect() end
+
+    TweenService:Create(welcomeOverlay, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
+    TweenService:Create(welcomeScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Scale = 0 }):Play()
+    task.wait(0.35)
+    welcomeOverlay:Destroy()
+
+    toggleButton.Visible = true
+    buttonScale.Scale = 0
+    TweenService:Create(buttonScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+end
+
+proceedBtn.Activated:Connect(closeWelcomeScreen)
+
+local function openWelcomeScreen()
+    welcomeOverlay.Visible = true
+    TweenService:Create(welcomeOverlay, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0.25 }):Play()
+    TweenService:Create(welcomeScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = getTargetScale(CONFIG.WELCOME_WIDTH, CONFIG.WELCOME_HEIGHT) }):Play()
+
+    task.spawn(function()
+        local timeLeft = 90
+        while timeLeft > 0 and not welcomeClosed do
+            local mins = math.floor(timeLeft / 60)
+            local secs = timeLeft % 60
+            timerLabel.Text = string.format("⏱️ %02d:%02d", mins, secs)
+            task.wait(1)
+            timeLeft -= 1
+        end
+        if not welcomeClosed then closeWelcomeScreen() end
+    end)
+end
+
+task.spawn(function()
+    TweenService:Create(loadingOverlay, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0.35 }):Play()
+    TweenService:Create(loadingScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = getTargetScale(340, 110) }):Play()
+    task.wait(0.3)
+
+    local currentValidKey = ""
+    local steps = {
+        {pct = 0.30, text = "Inicializando interface... 30%"},
+        {pct = 0.65, text = "Verificando Key ativa... 65%", checkKey = true},
+        {pct = 1.00, text = "Carregamento concluído! 100%"}
+    }
+
+    for _, step in ipairs(steps) do
+        loadingStatus.Text = step.text
+        if step.checkKey then currentValidKey = getActiveKey() end
+        TweenService:Create(barFill, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(step.pct, 0, 1, 0) }):Play()
+        task.wait(0.4)
+    end
+
+    TweenService:Create(loadingScale, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Scale = 0 }):Play()
+    TweenService:Create(loadingOverlay, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
+    task.wait(0.25)
+    loadingOverlay:Destroy()
+
+    local savedKey = ""
+    pcall(function()
+        if isfile and readfile and isfile(CONFIG.KEY_SAVE_FILE) then
+            savedKey = readfile(CONFIG.KEY_SAVE_FILE):gsub("%s+", "")
+        end
+    end)
+
+    if savedKey ~= "" and savedKey == currentValidKey then
+        sendDiscordLog("🔓 Hub Carregado (Key Salva)", "O jogador entrou automaticamente usando uma Key válida já salva.", 3066993)
+        openWelcomeScreen()
+        return
+    end
+
+    keyOverlay.Visible = true
+    TweenService:Create(keyOverlay, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0.3 }):Play()
+    TweenService:Create(keyScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = getTargetScale(CONFIG.PANEL_WIDTH, CONFIG.PANEL_HEIGHT) }):Play()
+
+    getKeyBtn.Activated:Connect(function()
+        pcall(function() if setclipboard then setclipboard(CONFIG.DISCORD_LINK) end end)
+        keyFeedback.TextColor3 = Color3.fromRGB(100, 220, 255)
+        keyFeedback.Text = "✔ LINK COPIADO! PEGUE A KEY LÁ."
+    end)
+
+    local keyUnlocked = false
+    verifyKeyBtn.Activated:Connect(function()
+        if keyUnlocked then return end
+        local typed = keyInput.Text:gsub("%s+", "")
+        local latestKey = getActiveKey()
+
+        if typed == latestKey and typed ~= "" then
+            keyUnlocked = true
+            keyFeedback.TextColor3 = Color3.fromRGB(0, 255, 110)
+            keyFeedback.Text = "KEY CORRETA, APROVEITE GOAT"
+            inputStroke.Color = Color3.fromRGB(0, 255, 110)
+
+            sendDiscordLog("✅ Key Validada com Sucesso", "O jogador inseriu uma Key válida.", 3066993)
+
+            pcall(function()
+                if writefile then writefile(CONFIG.KEY_SAVE_FILE, typed) end
+            end)
+
+            task.wait(0.8)
+            TweenService:Create(keyScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Scale = 0 }):Play()
+            TweenService:Create(keyOverlay, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
+            task.wait(0.3)
+            keyOverlay:Destroy()
+
+            openWelcomeScreen()
+        else
+            keyFeedback.TextColor3 = Color3.fromRGB(255, 65, 65)
+            keyFeedback.Text = "ACESSO NEGADO"
+            inputStroke.Color = Color3.fromRGB(255, 65, 65)
+
+            sendDiscordLog("⛔ Tentativa de Key Inválida", "O jogador tentou acessar com uma Key incorreta.", 15158332)
+
+            task.wait(1.5)
+            inputStroke.Color = Color3.fromRGB(120, 120, 120)
+        end
+    end)
+end)
